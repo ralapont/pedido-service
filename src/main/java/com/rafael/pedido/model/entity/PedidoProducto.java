@@ -16,7 +16,7 @@ public class PedidoProducto {
     private Pedido pedido;
 
     private String productoCodigo; // Código del producto gestionado por otro microservicio
-    private Integer cantidad;
+    private Long cantidad;
     private Double precioUnitario;
 
 }
