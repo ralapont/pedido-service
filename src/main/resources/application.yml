@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: PEDIDOSERVICIO
+    name: pedido-service
   datasource:
     url: jdbc:postgresql://localhost:5433/pedidodb
     username: admin
