@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: pedido-service   # Nombre del servicio
+  config:
+    import: "configserver:http://localhost:8888"
