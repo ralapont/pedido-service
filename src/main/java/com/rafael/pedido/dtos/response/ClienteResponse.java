@@ -29,4 +29,5 @@ public class ClienteResponse {
     @JsonProperty("username")
     private String username;
 
+    private boolean degradado;
 }

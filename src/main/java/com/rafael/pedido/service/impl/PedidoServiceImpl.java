@@ -5,16 +5,12 @@ import com.rafael.pedido.dtos.response.ClienteResponse;
 import com.rafael.pedido.dtos.response.DetalleResponse;
 import com.rafael.pedido.dtos.response.PedidoResponse;
 import com.rafael.pedido.dtos.response.ProductoDTO;
-import com.rafael.pedido.feign.ClienteServiceClient;
-import com.rafael.pedido.feign.ProductoServiceClient;
 import com.rafael.pedido.model.entity.Pedido;
 import com.rafael.pedido.model.entity.PedidoProducto;
 import com.rafael.pedido.model.repository.PedidoRepository;
 import com.rafael.pedido.service.PedidoService;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -27,8 +23,7 @@ import java.util.Objects;
 public class PedidoServiceImpl  implements PedidoService {
 
     private final PedidoRepository pedidoRepository;;
-    private final ClienteServiceClient clienteServiceClient;
-    private final ProductoServiceClient productoServiceClient;
+    private final InvokeClientes invokeClientes;
 
     @Override
     public PedidoResponse crear(PedidoRequest pedido) {
@@ -38,7 +33,7 @@ public class PedidoServiceImpl  implements PedidoService {
                 .map(detalle -> buildDetallePedidoReponse(detalle.getCodigo(), detalle.getCantidad()))
                 .toList();
 
-        ClienteResponse clienteResponse = obtenerDetalleCliente(pedido.getClienteId());
+        ClienteResponse clienteResponse = invokeClientes.obtenerDetalleCliente(pedido.getClienteId());
         List<PedidoProducto> pedidoProductos = detalles.stream()
                 .map(det -> PedidoProducto.builder()
                         .cantidad(det.getCantidad())
@@ -81,8 +76,19 @@ public class PedidoServiceImpl  implements PedidoService {
     }
 
     private DetalleResponse buildDetallePedidoReponse(String codigo, Long cantidad) {
-        ProductoDTO productoDTO = obtenerDetalleProducto(codigo);
+        ProductoDTO productoDTO = invokeClientes.obtenerDetalleProducto(codigo);
 
+        if (!productoDTO.getNombre().equals("Producto no disponible")) {
+            if (productoDTO.getStock() >= cantidad) {
+                // Actualizar el stock del producto
+                Integer nuevoStock = productoDTO.getStock() - Math.toIntExact(cantidad);
+                invokeClientes.actualizarStockProducto(codigo, nuevoStock);
+            } else {
+                log.warn("Stock insuficiente para el producto con código: {}. Stock disponible: {}, Cantidad solicitada: {}",
+                        codigo, productoDTO.getStock(), cantidad);
+                throw new RuntimeException("Stock insuficiente para el producto con código: " + codigo);
+            }
+        }
         return DetalleResponse.builder()
                 .id(Objects.requireNonNull(productoDTO).getId())
                 .codigo(productoDTO.getCodigo())
@@ -107,32 +113,5 @@ public class PedidoServiceImpl  implements PedidoService {
                 .build();
     }
 
-    private ClienteResponse obtenerDetalleCliente(Long clienteId) {
-        try {
-            ResponseEntity<ClienteResponse> response = clienteServiceClient.getClienteDetalle(clienteId);
-             log.info("Respuesta del servicio de cliente: {}", response);
-            return response.getBody();
-        } catch (FeignException.NotFound e) {
-            return  null;
-        } catch (FeignException e) {
-            // manejar otros errores si es necesario
-            log.info("Error al verificar usuario: {}", e.getMessage());
-            throw new RuntimeException("Error al verificar usuario", e);
-        }
-    }
-
-    private ProductoDTO obtenerDetalleProducto(String codigoProducto) {
-        try {
-            ResponseEntity<ProductoDTO> response = productoServiceClient.getProductoPorCodigo(codigoProducto);
-            log.info("Respuesta del servicio de cliente: {}", response);
-            return response.getBody();
-        } catch (FeignException.NotFound e) {
-            return  null;
-        } catch (FeignException e) {
-            // manejar otros errores si es necesario
-            log.info("Error al verificar usuario: {}", e.getMessage());
-            throw new RuntimeException("Error al verificar usuario", e);
-        }
-    }
 
 }

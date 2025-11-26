@@ -1,6 +1,8 @@
 package com.rafael.pedido.config;
 
+import com.rafael.pedido.feign.CustomErrorDecoder;
 import feign.RequestInterceptor;
+import feign.codec.ErrorDecoder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,5 +22,10 @@ public class FeignConfig {
                 requestTemplate.header(HttpHeaders.AUTHORIZATION, "Bearer " + token);
             }
         };
+    }
+
+    @Bean
+    public ErrorDecoder errorDecoder() {
+        return new CustomErrorDecoder();
     }
 }

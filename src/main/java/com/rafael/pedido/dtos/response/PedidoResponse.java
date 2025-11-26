@@ -1,8 +1,6 @@
 package com.rafael.pedido.dtos.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.rafael.pedido.dtos.request.DetalleProducto;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
