@@ -1,0 +1,10 @@
+{
+  "type": "record",
+  "name": "ErrorEvento",
+  "namespace": "com.rafael.pedido.model.eventos",
+  "fields": [
+    {"name": "codigo", "type": "string"},
+    {"name": "stock", "type": "int", "default": 0},
+    {"name": "mensaje", "type": "string"}
+  ]
+}
