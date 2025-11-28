@@ -14,6 +14,6 @@ public interface ProductoServiceClient {
     @GetMapping("/api/productos/codigo")
     ResponseEntity<ProductoDTO> getProductoPorCodigo( @RequestParam("codigo") String codigo );
 
-    @PutMapping("/{codigo}/stock")
-    ProductoDTO actualizarStock(@PathVariable("codigo") String codigo, @RequestParam("stock") Integer stock);
+    @PutMapping("/api/productos/{codigo}/stock")
+    ResponseEntity<ProductoDTO>  actualizarStock(@PathVariable("codigo") String codigo, @RequestParam("stock") Integer stock);
 }

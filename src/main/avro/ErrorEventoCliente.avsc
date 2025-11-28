@@ -1,0 +1,9 @@
+{
+  "type": "record",
+  "name": "ErrorEventoCliente",
+  "namespace": "com.rafael.pedido.model.cliente",
+  "fields": [
+    {"name": "codigo", "type": "long"},
+    {"name": "mensaje", "type": "string"}
+  ]
+}

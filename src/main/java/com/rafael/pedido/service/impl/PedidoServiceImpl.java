@@ -23,7 +23,8 @@ import java.util.Objects;
 public class PedidoServiceImpl  implements PedidoService {
 
     private final PedidoRepository pedidoRepository;;
-    private final InvokeClientes invokeClientes;
+    private final InvokeServiceProducto invokeProducto;
+    private final InvokeServiceCliente invokeClientes;
 
     @Override
     public PedidoResponse crear(PedidoRequest pedido) {
@@ -76,14 +77,17 @@ public class PedidoServiceImpl  implements PedidoService {
     }
 
     private DetalleResponse buildDetallePedidoReponse(String codigo, Long cantidad) {
-        ProductoDTO productoDTO = invokeClientes.obtenerDetalleProducto(codigo);
+        ProductoDTO productoDTO = invokeProducto.obtenerDetalleProducto(codigo);
 
         if (!productoDTO.getNombre().equals("Producto no disponible")) {
             if (productoDTO.getStock() >= cantidad) {
                 // Actualizar el stock del producto
                 Integer nuevoStock = productoDTO.getStock() - Math.toIntExact(cantidad);
-                invokeClientes.actualizarStockProducto(codigo, nuevoStock);
+                log.info("Actualizando stock del producto con código: {}. Nuevo stock: {}", codigo, nuevoStock);
+                invokeProducto.actualizarStockProducto(codigo, nuevoStock);
             } else {
+                invokeProducto.publicarErrorProducto(codigo, productoDTO.getStock(),
+                        "Stock insuficiente para el producto con código: " + codigo);
                 log.warn("Stock insuficiente para el producto con código: {}. Stock disponible: {}, Cantidad solicitada: {}",
                         codigo, productoDTO.getStock(), cantidad);
                 throw new RuntimeException("Stock insuficiente para el producto con código: " + codigo);
